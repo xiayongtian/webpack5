@@ -12,7 +12,7 @@ import './css/iconfont.css'
 count()
 let a = 7
 console.log('a', a)
-console.log(sum(3, 4, 5, 6))
+console.log(sum(3, 4, 5, 6, 7))
 // ----------------测试eslint规则--------------------
 
 // function test(arg) {
@@ -34,3 +34,9 @@ console.log(sum(3, 4, 5, 6))
 // foo()
 // ----------------测试eslint规则--------------------
 
+// css的HMR判断是否支持HMR功能，可以使用vue-loader, react-hot-loader进行快捷
+
+// if (module.hot) {
+//     module.hot.accept("./js/count.js")
+//     module.hot.accept("./js/sum.js")
+// }
