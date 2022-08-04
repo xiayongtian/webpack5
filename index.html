@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./dist/static/js/main.js"></script>
+    <style>
+        .icon {
+            width: 1em;
+            height: 1em;
+            vertical-align: -0.15em;
+            fill: currentColor;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main"> test123</div>
+    <div class="box"> box</div>
+    <div class="testsass"> sass</div>
+    <div class="testscss"> scss</div>
+    <div class="teststyl"> stylus</div>
+    <div class="iconfont icon-erweima "> stylus</div>
+    <!-- symbol引用通过一些技巧，支持像字体那样，通过 font-size, color 来调整样式。前提：icon是无色的 -->
+    <svg class="icon" aria-hidden="true" style="font-size:50px">
+        <use xlink:href="#icon-infofill" style="color: pink;"></use>
+    </svg>
+    <!-- <script type="module">
+        // var a = 7
+        import sum from './dist/static/js/main.js'
+        console.log('sum', sum(3, 4))
+    </script> -->
+
+</body>
+
+</html>
