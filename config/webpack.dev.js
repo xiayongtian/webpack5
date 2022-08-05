@@ -1,6 +1,9 @@
+const os = require("os");  // nodejs核心模块，直接使用
 const path = require('path');  //node的核心模块，专门用来处理路径问题
 const ESLintPlugin = require('eslint-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+// cpu核数
+const threads = os.cpus().length - 1;
 
 module.exports = {
     // 入口
@@ -17,7 +20,7 @@ module.exports = {
     module: {
         rules: [
             {
-                //loader的配置
+                //loader的配置，// 每个文件只能被其中一个loader处理
                 oneOf: [
                     {
                         test: /\.css$/,  //只检测.css文件
@@ -78,7 +81,21 @@ module.exports = {
                     {
                         test: /\.js$/,
                         exclude: /(node_modules)/,
-                        loader: 'babel-loader',
+                        use: [
+                            {
+                                loader: "thread-loader", // 开启多进程
+                                options: {
+                                    workers: threads, // 数量
+                                },
+                            },
+                            {
+                                loader: "babel-loader",
+                                options: {
+                                    cacheDirectory: true, // 开启babel编译缓存
+                                    cacheCompression: false, // 缓存文件不要压缩
+                                },
+                            },
+                        ],
                         // use: {
                         //     loader: 'babel-loader',
                         //     options: {
@@ -95,7 +112,15 @@ module.exports = {
         //plugins的配置
         new ESLintPlugin({
             context: path.resolve(__dirname, '../src'),
-            exclude: ['node_modules', path.resolve(__dirname, '../src/media'),]//指定需要排除的文件及目录
+            exclude: ['node_modules', path.resolve(__dirname, '../src/media'),],//指定需要排除的文件及目录
+            cache: true, // 开启缓存
+            // 缓存目录
+            cacheLocation: path.resolve(
+                __dirname,
+                "../node_modules/.cache/.eslintcache"
+            ),
+            threads, //开启多进程和设置进程数量
+
         }),
         // 以 index.html 为模板创建文件
         // 新的html文件有两个特点：1. 内容和源文件一致 2. 自动引入打包生成的js等资源

@@ -1,8 +1,14 @@
+
+const os = require("os");  // nodejs核心模块，直接使用
 const path = require('path');  //node的核心模块，专门用来处理路径问题
 const ESLintPlugin = require('eslint-webpack-plugin');  //eslint配置
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin"); //提取css成单独文件
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin"); //css压缩处理
+const TerserPlugin = require("terser-webpack-plugin"); //webpack内置插件
+
+// cpu核数
+const threads = os.cpus().length - 1;
 
 const getStyleLoader = (pre) => {
     // 执行顺序，从右到左（从下到上）
@@ -86,7 +92,21 @@ module.exports = {
                     {
                         test: /\.js$/,
                         exclude: /(node_modules)/,
-                        loader: 'babel-loader',
+                        use: [
+                            {
+                                loader: "thread-loader", // 开启多进程
+                                options: {
+                                    workers: threads, // 数量
+                                },
+                            },
+                            {
+                                loader: "babel-loader",
+                                options: {
+                                    cacheDirectory: true, // 开启babel编译缓存
+                                    cacheCompression: false, // 缓存文件不要压缩
+                                },
+                            },
+                        ],
                         // use: {
                         //     loader: 'babel-loader',
                         //     options: {
@@ -103,7 +123,14 @@ module.exports = {
         //plugins的配置
         new ESLintPlugin({
             context: path.resolve(__dirname, '../src'),
-            exclude: ['node_modules', path.resolve(__dirname, '../src/media'),]//指定需要排除的文件及目录
+            exclude: ['node_modules', path.resolve(__dirname, '../src/media'),],//指定需要排除的文件及目录
+            cache: true, // 开启缓存
+            // 缓存目录
+            cacheLocation: path.resolve(
+                __dirname,
+                "../node_modules/.cache/.eslintcache"
+            ),
+            threads, //开启多进程和设置进程数量
         }),
         // 以 index.html 为模板创建文件
         // 新的html文件有两个特点：1. 内容和源文件一致 2. 自动引入打包生成的js等资源
@@ -117,7 +144,21 @@ module.exports = {
         }),
         // css压缩
         new CssMinimizerPlugin(),
+        // new TerserPlugin({
+        //     parallel: threads // 开启多进程
+        // })
     ],
+    optimization: {
+        //压缩的操作
+        minimizer: [
+            // css压缩
+            new CssMinimizerPlugin(),
+            // 当生产模式会默认开启TerserPlugin，但是我们需要进行其他配置，就要重新写了
+            new TerserPlugin({
+                parallel: threads // 开启多进程
+            })
+        ],
+    },
     // 模式
     mode: 'production',
     devtool: "source-map",
