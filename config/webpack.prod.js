@@ -6,7 +6,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin"); //提取css成单独文件
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin"); //css压缩处理
 const TerserPlugin = require("terser-webpack-plugin"); //webpack内置插件
-
+const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
 // cpu核数
 const threads = os.cpus().length - 1;
 
@@ -104,6 +104,7 @@ module.exports = {
                                 options: {
                                     cacheDirectory: true, // 开启babel编译缓存
                                     cacheCompression: false, // 缓存文件不要压缩
+                                    plugins: ["@babel/plugin-transform-runtime"], // 减少代码体积
                                 },
                             },
                         ],
@@ -156,7 +157,35 @@ module.exports = {
             // 当生产模式会默认开启TerserPlugin，但是我们需要进行其他配置，就要重新写了
             new TerserPlugin({
                 parallel: threads // 开启多进程
-            })
+            }),
+            // 压缩图片
+            new ImageMinimizerPlugin({
+                minimizer: {
+                    implementation: ImageMinimizerPlugin.imageminGenerate,
+                    options: {
+                        plugins: [
+                            ["gifsicle", { interlaced: true }],
+                            ["jpegtran", { progressive: true }],
+                            ["optipng", { optimizationLevel: 5 }],
+                            [
+                                "svgo",
+                                {
+                                    plugins: [
+                                        "preset-default",
+                                        "prefixIds",
+                                        {
+                                            name: "sortAttrs",
+                                            params: {
+                                                xmlnsOrder: "alphabetical",
+                                            },
+                                        },
+                                    ],
+                                },
+                            ],
+                        ],
+                    },
+                },
+            }),
         ],
     },
     // 模式
